@@ -7,7 +7,6 @@ import cat.itacademy.s04.t02.n01.fruit_api_h2.repository.FruitRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class FruitService {
