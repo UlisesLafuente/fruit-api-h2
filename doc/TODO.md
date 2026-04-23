@@ -13,48 +13,48 @@
 - [x] Crear paquete `cat.itacademy.s04.t02.n01.exception`
 
 ## Entity Fruit
-- [ ] Crear entidad Fruit con propiedades: id, name, weightInKilos
-- [ ] Configurar @Id y @GeneratedValue para generación automática de ID
+- [x] Crear entidad Fruit con propiedades: id, name, weightInKilos
+- [x] Configurar @Id y @GeneratedValue para generación automática de ID
 
 ## DTOs
-- [ ] Crear FruitDto para entrada/salida de datos
-- [ ] Aplicar anotaciones de validación: @NotBlank, @NotNull, @Positive
-- [ ] Implementar mapeo entre Entity y DTO
+- [x] Crear FruitDto para entrada/salida de datos
+- [x] Aplicar anotaciones de validación: @NotBlank, @NotNull, @Positive
+- [x] Implementar mapeo entre Entity y DTO
 
 ## Repository
-- [ ] Crear FruitRepository extendiendo JpaRepository
+- [x] Crear FruitRepository extendiendo JpaRepository
 
 ## Services
-- [ ] Crear FruitService con lógica de negocio
-- [ ] Implementar métodos: addFruit, getAllFruits, getFruitById, updateFruit, deleteFruit
-- [ ] Escribir tests unitarios con Mockito
+- [x] Crear FruitService con lógica de negocio
+- [x] Implementar métodos: addFruit, getAllFruits, getFruitById, updateFruit, deleteFruit
+- [x] Escribir tests unitarios con Mockito
 
 ## Controller
-- [ ] Crear FruitController conendpoints REST
-- [ ] Implementar POST /fruits - Create fruit
-- [ ] Implementar PUT /fruits/{id} - Update fruit
-- [ ] Implementar DELETE /fruits/{id} - Remove by id
-- [ ] Implementar GET /fruits/{id} - Get fruit by id
-- [ ] Implementar GET /fruits - Get all fruits
-- [ ] Usar ResponseEntity para devolver códigos HTTP correctos
+- [x] Crear FruitController con endpoints REST
+- [x] Implementar POST /fruits - Create fruit
+- [x] Implementar PUT /fruits/{id} - Update fruit
+- [x] Implementar DELETE /fruits/{id} - Remove by id
+- [x] Implementar GET /fruits/{id} - Get fruit by id
+- [x] Implementar GET /fruits - Get all fruits
+- [x] Usar ResponseEntity para devolver códigos HTTP correctos
 
 ## Exception Handling
-- [ ] Crear GlobalExceptionHandler para manejo centralizado de excepciones
-- [ ] Implementar manejo de validation errors (HTTP 400)
-- [ ] Implementar manejo de ResourceNotFoundException (HTTP 404)
-- [ ] Configurar respuestasJson consistentes para errores
+- [x] Crear GlobalExceptionHandler para manejo centralizado de excepciones
+- [x] Implementar manejo de validation errors (HTTP 400)
+- [x] Implementar manejo de ResourceNotFoundException (HTTP 404)
+- [x] Configurar respuestasJson consistentes para errores
 
 ## Tests (TDD)
-- [ ] Escribir tests de integración con @SpringBootTest y MockMvc
-- [ ] Escribir tests unitarios para servicios con Mockito
-- [ ] Verificar códigos de respuesta HTTP correctos (201, 200, 204, 400, 404)
+- [x] Escribir tests de integración con @SpringBootTest y MockMvc
+- [x] Escribir tests unitarios para servicios con Mockito
+- [x] Verificar códigos de respuesta HTTP correctos (201, 200, 204, 400, 404)
 
 ## Docker
-- [ ] Crear Dockerfile multi-stage
-- [ ] Stage 1: Compilar aplicación y generar .jar
-- [ ] Stage 2: Copiar .jar a imagen ligera para producción
-- [ ] Configurar connection a base de datos mediante environment variables
+- [x] Crear Dockerfile multi-stage
+- [x] Stage 1: Compilar aplicación y generar .jar
+- [x] Stage 2: Copiar .jar a imagen ligera para producción
+- [x] Configurar connection a base de datos mediante environment variables
 
 ## Configuración
-- [ ] Configurar conexión a H2 mediante environment variables
-- [ ] Verificar que la aplicación funcione correctamente
+- [x] Configurar conexión a H2 mediante environment variables
+- [x] Verificar que la aplicación funcione correctamente
