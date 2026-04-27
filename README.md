@@ -205,3 +205,15 @@ src/main/java/cat/itacademy/s04/t02/n02/
 ```
 
 Genera: `target/fruit-api-MySQL-0.0.1-SNAPSHOT.jar`
+
+## Licencia
+
+Este proyecto está licenciado bajo la **Apache License 2.0**. Ver el archivo [LICENSE.txt](./LICENSE.txt) para más detalles.
+
+```
+Copyright 2026 Ulises Lafuente
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+```
