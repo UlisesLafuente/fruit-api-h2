@@ -3,6 +3,8 @@ package cat.itacademy.s04.t02.n02.controllers;
 import cat.itacademy.s04.t02.n02.fruit.dto.FruitDto;
 import cat.itacademy.s04.t02.n02.fruit.model.Fruit;
 import cat.itacademy.s04.t02.n02.fruit.repository.FruitRepository;
+import cat.itacademy.s04.t02.n02.provider.model.Provider;
+import cat.itacademy.s04.t02.n02.provider.repository.ProviderRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,14 +31,25 @@ class FruitControllerIntegrationTest {
     @Autowired
     private FruitRepository fruitRepository;
 
+    @Autowired
+    private ProviderRepository providerRepository;
+
+    private Provider provider;
+
     @BeforeEach
     void setUp() {
         fruitRepository.deleteAll();
+        providerRepository.deleteAll();
+        
+        provider = new Provider();
+        provider.setName("Provider1");
+        provider.setCountry("Spain");
+        provider = providerRepository.save(provider);
     }
 
     @Test
     void addFruit_shouldReturn201() throws Exception {
-        FruitDto fruitDto = new FruitDto(null, "Apple", 2);
+        FruitDto fruitDto = new FruitDto(null, "Apple", 2, provider.getId());
 
         mockMvc.perform(post("/fruits")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -44,12 +57,23 @@ class FruitControllerIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.name").value("Apple"))
-                .andExpect(jsonPath("$.weightInKilos").value(2));
+                .andExpect(jsonPath("$.weightInKilos").value(2))
+                .andExpect(jsonPath("$.providerId").value(provider.getId()));
+    }
+
+    @Test
+    void addFruit_withoutProvider_shouldReturn400() throws Exception {
+        FruitDto fruitDto = new FruitDto(null, "Apple", 2, null);
+
+        mockMvc.perform(post("/fruits")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(fruitDto)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     void addFruit_withInvalidData_shouldReturn400() throws Exception {
-        FruitDto fruitDto = new FruitDto(null, "", -1);
+        FruitDto fruitDto = new FruitDto(null, "", -1, provider.getId());
 
         mockMvc.perform(post("/fruits")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -60,13 +84,51 @@ class FruitControllerIntegrationTest {
     }
 
     @Test
+    void addFruit_withInvalidProvider_shouldReturn404() throws Exception {
+        FruitDto fruitDto = new FruitDto(null, "Apple", 2, 999L);
+
+        mockMvc.perform(post("/fruits")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(fruitDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
     void getAllFruits_shouldReturn200() throws Exception {
         Fruit fruit = new Fruit();
         fruit.setName("Apple");
         fruit.setWeightInKilos(2);
+        fruit.setProvider(provider);
         fruitRepository.save(fruit);
 
         mockMvc.perform(get("/fruits"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Apple"));
+    }
+
+    @Test
+    void getFruitsByProviderId_shouldReturnFilteredFruits() throws Exception {
+        Provider provider2 = new Provider();
+        provider2.setName("Provider2");
+        provider2.setCountry("France");
+        provider2 = providerRepository.save(provider2);
+
+        Fruit fruit1 = new Fruit();
+        fruit1.setName("Apple");
+        fruit1.setWeightInKilos(2);
+        fruit1.setProvider(provider);
+        fruitRepository.save(fruit1);
+
+        Fruit fruit2 = new Fruit();
+        fruit2.setName("Banana");
+        fruit2.setWeightInKilos(3);
+        fruit2.setProvider(provider2);
+        fruitRepository.save(fruit2);
+
+        mockMvc.perform(get("/fruits?providerId=" + provider.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -78,12 +140,14 @@ class FruitControllerIntegrationTest {
         Fruit fruit = new Fruit();
         fruit.setName("Apple");
         fruit.setWeightInKilos(2);
+        fruit.setProvider(provider);
         Fruit saved = fruitRepository.save(fruit);
 
         mockMvc.perform(get("/fruits/" + saved.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(saved.getId()))
-                .andExpect(jsonPath("$.name").value("Apple"));
+                .andExpect(jsonPath("$.name").value("Apple"))
+                .andExpect(jsonPath("$.providerId").value(provider.getId()));
     }
 
     @Test
@@ -98,9 +162,10 @@ class FruitControllerIntegrationTest {
         Fruit fruit = new Fruit();
         fruit.setName("Apple");
         fruit.setWeightInKilos(2);
+        fruit.setProvider(provider);
         Fruit saved = fruitRepository.save(fruit);
 
-        FruitDto updatedDto = new FruitDto(saved.getId(), "Banana", 5);
+        FruitDto updatedDto = new FruitDto(saved.getId(), "Banana", 5, provider.getId());
 
         mockMvc.perform(put("/fruits/" + saved.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -113,9 +178,26 @@ class FruitControllerIntegrationTest {
 
     @Test
     void updateFruit_whenNotExists_shouldReturn404() throws Exception {
-        FruitDto updatedDto = new FruitDto(999L, "Banana", 5);
+        FruitDto updatedDto = new FruitDto(999L, "Banana", 5, provider.getId());
 
         mockMvc.perform(put("/fruits/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatedDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404));
+    }
+
+    @Test
+    void updateFruit_withInvalidProvider_shouldReturn404() throws Exception {
+        Fruit fruit = new Fruit();
+        fruit.setName("Apple");
+        fruit.setWeightInKilos(2);
+        fruit.setProvider(provider);
+        Fruit saved = fruitRepository.save(fruit);
+
+        FruitDto updatedDto = new FruitDto(saved.getId(), "Banana", 5, 999L);
+
+        mockMvc.perform(put("/fruits/" + saved.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isNotFound())
@@ -127,6 +209,7 @@ class FruitControllerIntegrationTest {
         Fruit fruit = new Fruit();
         fruit.setName("Apple");
         fruit.setWeightInKilos(2);
+        fruit.setProvider(provider);
         Fruit saved = fruitRepository.save(fruit);
 
         mockMvc.perform(delete("/fruits/" + saved.getId()))

@@ -22,6 +22,7 @@ public class FruitDto {
     @Positive(message = "Weight must be positive")
     private int weightInKilos;
 
+    @NotNull(message = "Provider is required")
     private Long providerId;
 
     public static FruitDto fromEntity(Fruit fruit) {

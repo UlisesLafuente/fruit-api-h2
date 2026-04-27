@@ -53,7 +53,7 @@ Es el **punto de entrada** de la aplicación Spring Boot. Es la clase principal 
 
 ### ¿Por qué existe?
 
-Toda aplicación Java necesita un método `main()` para ejecutarse. Esta clase usa la anotación `@SpringBootApplication` que组合三个注解:
+Toda aplicación Java necesita un método `main()` para ejecutarse. Esta clase usa la anotación `@SpringBootApplication` que:
 
 1. `@SpringBootConfiguration` - Permite configurar la aplicación mediante código Java
 2. `@EnableAutoConfiguration` - Spring Boot configura automáticamente componentes basados en dependencias

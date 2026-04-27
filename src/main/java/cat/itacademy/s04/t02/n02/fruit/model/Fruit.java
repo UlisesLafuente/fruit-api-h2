@@ -21,6 +21,6 @@ public class Fruit {
     private int weightInKilos;
 
     @ManyToOne
-    @JoinColumn(name = "provider_id")
+    @JoinColumn(name = "provider_id", nullable = false)
     private Provider provider;
 }

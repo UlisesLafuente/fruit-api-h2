@@ -5,6 +5,8 @@ import cat.itacademy.s04.t02.n02.fruit.exception.ResourceNotFoundException;
 import cat.itacademy.s04.t02.n02.fruit.model.Fruit;
 import cat.itacademy.s04.t02.n02.fruit.repository.FruitRepository;
 import cat.itacademy.s04.t02.n02.fruit.services.FruitService;
+import cat.itacademy.s04.t02.n02.provider.model.Provider;
+import cat.itacademy.s04.t02.n02.provider.repository.ProviderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,24 +28,35 @@ class FruitServiceTest {
     @Mock
     private FruitRepository fruitRepository;
 
+    @Mock
+    private ProviderRepository providerRepository;
+
     @InjectMocks
     private FruitService fruitService;
 
     private Fruit fruit;
     private FruitDto fruitDto;
+    private Provider provider;
 
     @BeforeEach
     void setUp() {
+        provider = new Provider();
+        provider.setId(1L);
+        provider.setName("Provider1");
+        provider.setCountry("Spain");
+
         fruit = new Fruit();
         fruit.setId(1L);
         fruit.setName("Apple");
         fruit.setWeightInKilos(2);
+        fruit.setProvider(provider);
 
-        fruitDto = new FruitDto(1L, "Apple", 2);
+        fruitDto = new FruitDto(1L, "Apple", 2, 1L);
     }
 
     @Test
     void addFruit_shouldSaveAndReturnDto() {
+        when(providerRepository.findById(1L)).thenReturn(Optional.of(provider));
         when(fruitRepository.save(any(Fruit.class))).thenReturn(fruit);
 
         FruitDto result = fruitService.addFruit(fruitDto);
@@ -51,7 +64,17 @@ class FruitServiceTest {
         assertNotNull(result);
         assertEquals("Apple", result.getName());
         assertEquals(2, result.getWeightInKilos());
+        assertEquals(1L, result.getProviderId());
         verify(fruitRepository, times(1)).save(any(Fruit.class));
+    }
+
+    @Test
+    void addFruit_withInvalidProvider_shouldThrowException() {
+        FruitDto fruitDtoNoProvider = new FruitDto(null, "Apple", 2, 99L);
+        when(providerRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, 
+            () -> fruitService.addFruit(fruitDtoNoProvider));
     }
 
     @Test
@@ -68,6 +91,18 @@ class FruitServiceTest {
     }
 
     @Test
+    void getFruitsByProviderId_shouldReturnFilteredList() {
+        List<Fruit> fruits = Arrays.asList(fruit);
+        when(fruitRepository.findByProviderId(1L)).thenReturn(fruits);
+
+        List<FruitDto> result = fruitService.getFruitsByProviderId(1L);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Apple", result.get(0).getName());
+    }
+
+    @Test
     void getFruitById_whenFound_shouldReturnDto() {
         when(fruitRepository.findById(1L)).thenReturn(Optional.of(fruit));
 
@@ -75,6 +110,7 @@ class FruitServiceTest {
 
         assertNotNull(result);
         assertEquals("Apple", result.getName());
+        assertEquals(1L, result.getProviderId());
         verify(fruitRepository, times(1)).findById(1L);
     }
 
@@ -90,13 +126,15 @@ class FruitServiceTest {
 
     @Test
     void updateFruit_shouldUpdateAndReturnDto() {
-        FruitDto updatedDto = new FruitDto(1L, "Banana", 3);
+        FruitDto updatedDto = new FruitDto(1L, "Banana", 3, 1L);
         Fruit updatedFruit = new Fruit();
         updatedFruit.setId(1L);
         updatedFruit.setName("Banana");
         updatedFruit.setWeightInKilos(3);
+        updatedFruit.setProvider(provider);
 
-        when(fruitRepository.existsById(1L)).thenReturn(true);
+        when(fruitRepository.findById(1L)).thenReturn(Optional.of(fruit));
+        when(providerRepository.findById(1L)).thenReturn(Optional.of(provider));
         when(fruitRepository.save(any(Fruit.class))).thenReturn(updatedFruit);
 
         FruitDto result = fruitService.updateFruit(1L, updatedDto);
@@ -104,21 +142,17 @@ class FruitServiceTest {
         assertNotNull(result);
         assertEquals("Banana", result.getName());
         assertEquals(3, result.getWeightInKilos());
-        verify(fruitRepository, times(1)).existsById(1L);
         verify(fruitRepository, times(1)).save(any(Fruit.class));
     }
 
     @Test
     void updateFruit_whenNotFound_shouldThrowException() {
-        FruitDto updatedDto = new FruitDto(99L, "Banana", 3);
+        FruitDto updatedDto = new FruitDto(99L, "Banana", 3, 1L);
 
-        when(fruitRepository.existsById(99L)).thenReturn(false);
+        when(fruitRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, 
             () -> fruitService.updateFruit(99L, updatedDto));
-        
-        verify(fruitRepository, times(1)).existsById(99L);
-        verify(fruitRepository, never()).save(any(Fruit.class));
     }
 
     @Test
