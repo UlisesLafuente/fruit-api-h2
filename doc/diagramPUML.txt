@@ -1,0 +1,142 @@
+@startuml
+
+' ==================== ENTITIES ====================
+
+class "Fruit" {
+    - Long id
+    - String name
+    - int weightInKilos
+    - Provider provider
+}
+
+class "Provider" {
+    - Long id
+    - String name
+    - String country
+    - List<Fruit> fruits
+}
+
+' ==================== DTOS ====================
+
+class "FruitDto" {
+    - Long id
+    - String name
+    - int weightInKilos
+    - Long providerId
+    + fromEntity(Fruit): FruitDto
+    + toEntity(): Fruit
+    + toEntityWithProvider(Provider): Fruit
+}
+
+class "ProviderDto" {
+    - Long id
+    - String name
+    - String country
+    + fromEntity(Provider): ProviderDto
+    + toEntity(): Provider
+}
+
+' ==================== SERVICES ====================
+
+class "FruitService" {
+    + addFruit(FruitDto): FruitDto
+    + getAllFruits(): List<FruitDto>
+    + getFruitsByProviderId(Long): List<FruitDto>
+    + getFruitById(Long): FruitDto
+    + updateFruit(Long, FruitDto): FruitDto
+    + deleteFruit(Long): void
+}
+
+class "ProviderService" {
+    + addProvider(ProviderDto): ProviderDto
+    + getAllProviders(): List<ProviderDto>
+    + getProviderById(Long): ProviderDto
+    + updateProvider(Long, ProviderDto): ProviderDto
+    + deleteProvider(Long): void
+    + getFruitsByProviderId(Long): List<FruitDto>
+}
+
+' ==================== CONTROLLERS ====================
+
+class "FruitController" {
+    + addFruit(FruitDto): ResponseEntity<FruitDto>
+    + getAllFruits(Long): ResponseEntity<List<FruitDto>>
+    + getFruitById(Long): ResponseEntity<FruitDto>
+    + updateFruit(Long, FruitDto): ResponseEntity<FruitDto>
+    + deleteFruit(Long): ResponseEntity<Void>
+}
+
+class "ProviderController" {
+    + addProvider(ProviderDto): ResponseEntity<ProviderDto>
+    + getAllProviders(): ResponseEntity<List<ProviderDto>>
+    + getProviderById(Long): ResponseEntity<ProviderDto>
+    + getFruitsByProviderId(Long): ResponseEntity<List<FruitDto>>
+    + updateProvider(Long, ProviderDto): ResponseEntity<ProviderDto>
+    + deleteProvider(Long): ResponseEntity<Void>
+}
+
+' ==================== REPOSITORIES ====================
+
+class "FruitRepository" {
+    + findAll(): List<Fruit>
+    + findById(Long): Optional<Fruit>
+    + save(Fruit): Fruit
+    + deleteById(Long): void
+    + existsById(Long): boolean
+    + findByProviderId(Long): List<Fruit>
+}
+
+class "ProviderRepository" {
+    + findAll(): List<Provider>
+    + findById(Long): Optional<Provider>
+    + save(Provider): Provider
+    + deleteById(Long): void
+    + existsById(Long): boolean
+    + existsByName(String): boolean
+}
+
+' ==================== EXCEPTIONS ====================
+
+class "ResourceNotFoundException" #lightyellow
+class "ErrorResponse" #lightyellow
+class "GlobalExceptionHandler" #lightyellow
+class "ProviderNotFoundException" #lightyellow
+class "ProviderAlreadyExistsException" #lightyellow
+class "ProviderHasFruitsException" #lightyellow
+
+' ==================== RELATIONSHIPS ====================
+
+' Entity relationships
+Provider "1" -- "*" Fruit : @OneToMany
+Fruit "*" -- "1" Provider : @ManyToOne
+
+' Controller -> Service
+FruitController --> FruitService
+ProviderController --> ProviderService
+
+' Service -> Repository
+FruitService --> FruitRepository
+ProviderService --> ProviderRepository
+ProviderService --> FruitRepository
+
+' Service -> DTO
+FruitService ..> FruitDto
+ProviderService ..> ProviderDto
+
+' Service -> Exception
+FruitService --> ResourceNotFoundException
+ProviderService --> ProviderNotFoundException
+ProviderService --> ProviderAlreadyExistsException
+ProviderService --> ProviderHasFruitsException
+
+' GlobalExceptionHandler handles exceptions
+GlobalExceptionHandler --> ResourceNotFoundException
+GlobalExceptionHandler --> ProviderNotFoundException
+GlobalExceptionHandler --> ProviderAlreadyExistsException
+GlobalExceptionHandler --> ProviderHasFruitsException
+
+' DTO -> Entity
+FruitDto ..> Fruit
+ProviderDto ..> Provider
+
+@enduml
