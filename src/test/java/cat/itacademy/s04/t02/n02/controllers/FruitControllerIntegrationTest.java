@@ -1,8 +1,8 @@
-package cat.itacademy.s04.t02.n01.fruit_api_h2.controllers;
+package cat.itacademy.s04.t02.n02.controllers;
 
-import cat.itacademy.s04.t02.n01.fruit_api_h2.dto.FruitDto;
-import cat.itacademy.s04.t02.n01.fruit_api_h2.model.Fruit;
-import cat.itacademy.s04.t02.n01.fruit_api_h2.repository.FruitRepository;
+import cat.itacademy.s04.t02.n02.fruit.dto.FruitDto;
+import cat.itacademy.s04.t02.n02.fruit.model.Fruit;
+import cat.itacademy.s04.t02.n02.fruit.repository.FruitRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

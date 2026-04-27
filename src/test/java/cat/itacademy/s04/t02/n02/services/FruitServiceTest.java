@@ -1,9 +1,10 @@
-package cat.itacademy.s04.t02.n01.fruit_api_h2.services;
+package cat.itacademy.s04.t02.n02.services;
 
-import cat.itacademy.s04.t02.n01.fruit_api_h2.dto.FruitDto;
-import cat.itacademy.s04.t02.n01.fruit_api_h2.exception.ResourceNotFoundException;
-import cat.itacademy.s04.t02.n01.fruit_api_h2.model.Fruit;
-import cat.itacademy.s04.t02.n01.fruit_api_h2.repository.FruitRepository;
+import cat.itacademy.s04.t02.n02.fruit.dto.FruitDto;
+import cat.itacademy.s04.t02.n02.fruit.exception.ResourceNotFoundException;
+import cat.itacademy.s04.t02.n02.fruit.model.Fruit;
+import cat.itacademy.s04.t02.n02.fruit.repository.FruitRepository;
+import cat.itacademy.s04.t02.n02.fruit.services.FruitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

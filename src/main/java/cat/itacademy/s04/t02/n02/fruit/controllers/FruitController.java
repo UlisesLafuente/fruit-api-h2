@@ -1,7 +1,7 @@
-package cat.itacademy.s04.t02.n01.fruit_api_h2.controllers;
+package cat.itacademy.s04.t02.n02.fruit.controllers;
 
-import cat.itacademy.s04.t02.n01.fruit_api_h2.dto.FruitDto;
-import cat.itacademy.s04.t02.n01.fruit_api_h2.services.FruitService;
+import cat.itacademy.s04.t02.n02.fruit.dto.FruitDto;
+import cat.itacademy.s04.t02.n02.fruit.services.FruitService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +26,13 @@ public class FruitController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FruitDto>> getAllFruits() {
-        List<FruitDto> fruits = fruitService.getAllFruits();
+    public ResponseEntity<List<FruitDto>> getAllFruits(@RequestParam(required = false) Long providerId) {
+        List<FruitDto> fruits;
+        if (providerId != null) {
+            fruits = fruitService.getFruitsByProviderId(providerId);
+        } else {
+            fruits = fruitService.getAllFruits();
+        }
         return ResponseEntity.ok(fruits);
     }
 

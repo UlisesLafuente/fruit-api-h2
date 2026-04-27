@@ -1,4 +1,4 @@
-package cat.itacademy.s04.t02.n01.fruit_api_h2;
+package cat.itacademy.s04.t02.n02;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
