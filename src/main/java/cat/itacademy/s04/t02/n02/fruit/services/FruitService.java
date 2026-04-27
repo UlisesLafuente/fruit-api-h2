@@ -1,7 +1,7 @@
 package cat.itacademy.s04.t02.n02.fruit.services;
 
 import cat.itacademy.s04.t02.n02.fruit.dto.FruitDto;
-import cat.itacademy.s04.t02.n02.fruit.exception.ResourceNotFoundException;
+import cat.itacademy.s04.t02.n02.common.exception.ResourceNotFoundException;
 import cat.itacademy.s04.t02.n02.fruit.model.Fruit;
 import cat.itacademy.s04.t02.n02.fruit.repository.FruitRepository;
 import cat.itacademy.s04.t02.n02.provider.model.Provider;

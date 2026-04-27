@@ -1,4 +1,4 @@
-package cat.itacademy.s04.t02.n02.fruit.exception;
+package cat.itacademy.s04.t02.n02.common.exception;
 
 import cat.itacademy.s04.t02.n02.provider.exception.ProviderAlreadyExistsException;
 import cat.itacademy.s04.t02.n02.provider.exception.ProviderHasFruitsException;
