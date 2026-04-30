@@ -1,6 +1,6 @@
-# Fruit API MySQL (Nivel 2)
+# Fruit API (Nivel 2)
 
-REST API para gestión de frutas y proveedores con base de datos MySQL.
+REST API para gestión de frutas y proveedores con base de datos MySQL o H2 (tests).
 
 ## Características
 
@@ -8,8 +8,8 @@ REST API para gestión de frutas y proveedores con base de datos MySQL.
 - **Relación @ManyToOne** entre Fruit y Provider
 - **Validación** de datos con Jakarta Validation
 - **Manejo de excepciones** centralizado (400, 404, 409)
-- **Base de datos MySQL** con persistencia
-- **Tests** unitarios y de integración
+- **Transaccionalidad** explícita en servicios
+- **Tests** unitarios y de integración con H2
 - **Docker** multi-stage build con docker-compose
 
 ## Tecnologías
@@ -20,6 +20,7 @@ REST API para gestión de frutas y proveedores con base de datos MySQL.
 | Spring Boot | 3.4.5 |
 | Spring Data JPA | - |
 | MySQL | 8.0 |
+| H2 (tests) | - |
 | Maven | 3.9 |
 
 ## Endpoints
@@ -29,7 +30,7 @@ REST API para gestión de frutas y proveedores con base de datos MySQL.
 | Método | Endpoint | Descripción | Código |
 |--------|----------|-------------|--------|
 | GET | `/fruits` | Listar todas las frutas | 200 |
-| GET | `/fruits?providerId={id}` | Listar frutas por proveedor | 200 |
+| GET | `/fruits?providerId={id}` | Listar frutas por proveedor | 200 / 404 |
 | GET | `/fruits/{id}` | Obtener fruta por ID | 200 / 404 |
 | POST | `/fruits` | Crear fruta | 201 / 400 / 404 |
 | PUT | `/fruits/{id}` | Actualizar fruta | 200 / 404 |
@@ -96,33 +97,31 @@ curl -X DELETE http://localhost:8080/providers/1
 - Maven 3.9+
 - MySQL 8.0 (o Docker)
 
-### Opción 1: Con MySQL externo
+### Con perfil por defecto (MySQL)
 ```bash
 ./mvnw spring-boot:run
 ```
 
-### Opción 2: Con Docker Compose
+### Tests (con H2)
+```bash
+./mvnw test
+```
+
+### Con Docker Compose
 ```bash
 docker-compose up -d
 ./mvnw spring-boot:run
 ```
 
-### Opción 3: Con Docker
-```bash
-docker build -t fruit-api-mysql .
-docker run -p 8080:8080 --network host fruit-api-mysql
-```
-
 ## Configuración
 
-La aplicación es configurable mediante environment variables:
+La aplicación es configurable mediante environment variables o application.properties:
 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
 | `SPRING_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/fruit_db` | URL de MySQL |
 | `SPRING_DATASOURCE_USERNAME` | `root` | Usuario de BD |
 | `SPRING_DATASOURCE_PASSWORD` | `root` | Password de BD |
-| `SPRING_JPA_DATABASE_PLATFORM` | `org.hibernate.dialect.MySQLDialect` | Dialecto Hibernate |
 
 ## Tests
 
@@ -130,47 +129,52 @@ La aplicación es configurable mediante environment variables:
 ./mvnw test
 ```
 
-**Cobertura:**
-- 11 tests unitarios (FruitService)
-- 11 tests unitarios (ProviderService)
-- 16 tests de integración (FruitController)
-- 12 tests de integración (ProviderController)
+**Total: 51 tests**
+- FruitServiceTest: 11 tests
+- ProviderServiceTest: 13 tests
+- FruitControllerIntegrationTest: 13 tests
+- ProviderControllerIntegrationTest: 13 tests
+- FruitApiH2ApplicationTests: 1 test
 
 ## Estructura del proyecto
 
 ```
 src/main/java/cat/itacademy/s04/t02/n02/
+├── FruitApiH2Application.java
+├── common/exception/
+│   ├── DomainException.java
+│   ├── ErrorResponse.java
+│   ├── GlobalExceptionHandler.java
+│   ├── NotFoundException.java
+│   └── ResourceNotFoundException.java
 ├── fruit/
 │   ├── controllers/
 │   │   └── FruitController.java
 │   ├── dto/
-│   │   └── FruitDto.java
-│   ├── exception/
-│   │   ├── ErrorResponse.java
-│   │   ├── GlobalExceptionHandler.java
-│   │   └── ResourceNotFoundException.java
+│   │   ├── FruitRequestDto.java
+│   │   └── FruitResponseDto.java
 │   ├── model/
 │   │   └── Fruit.java
 │   ├── repository/
 │   │   └── FruitRepository.java
 │   └── services/
 │       └── FruitService.java
-├── provider/
-│   ├── controllers/
-│   │   └── ProviderController.java
-│   ├── dto/
-│   │   └── ProviderDto.java
-│   ├── exception/
-│   │   ├── ProviderAlreadyExistsException.java
-│   │   ├── ProviderHasFruitsException.java
-│   │   └── ProviderNotFoundException.java
-│   ├── model/
-│   │   └── Provider.java
-│   ├── repository/
-│   │   └── ProviderRepository.java
-│   └── service/
-│       └── ProviderService.java
-└── FruitApiH2Application.java
+└── provider/
+    ├── controllers/
+    │   └── ProviderController.java
+    ├── dto/
+    │   ├── ProviderRequestDto.java
+    │   └── ProviderResponseDto.java
+    ├── exception/
+    │   ├── ProviderAlreadyExistsException.java
+    │   ├── ProviderHasFruitsException.java
+    │   └── ProviderNotFoundException.java
+    ├── model/
+    │   └── Provider.java
+    ├── repository/
+    │   └── ProviderRepository.java
+    └── service/
+        └── ProviderService.java
 ```
 
 ## Diagrama de arquitectura
@@ -183,18 +187,19 @@ src/main/java/cat/itacademy/s04/t02/n02/
                            ▼                    ▼
                       ┌─────────────┐     ┌─────────────┐
                       │    DTO      │     │   Entity    │
+                      │  (record)   │     │            │
                       └─────────────┘     └─────────────┘
-                                                 │
-                                           ┌─────┴─────┐
-                                           │  MySQL    │
-                                           └───────────┘
+                                            │
+                                      ┌─────┴─────┐
+                                      │  MySQL    │
+                                      └───────────┘
 ```
 
 ## Errores esperados
 
 | Código | Descripción |
 |--------|-------------|
-| 400 | Validación de datos incorrectos |
+| 400 | Validación de datos incorrectos o regla de negocio |
 | 404 | Recurso no encontrado |
 | 409 | Conflicto (proveedor duplicado) |
 
@@ -205,6 +210,21 @@ src/main/java/cat/itacademy/s04/t02/n02/
 ```
 
 Genera: `target/fruit-api-MySQL-0.0.1-SNAPSHOT.jar`
+
+## Historial de cambios
+
+### 30 de abril de 2026
+- DTOs refactorizados a records Java
+- Separación de DTOs de entrada y salida
+--weightInKilos cambiado a Integer con validación correcta
+- Añadida validación de proveedor en filtro de frutas
+- Añadida validación de nombre duplicado en actualización
+- Añadida restricción única en Provider (BD)
+- Jerarquía de excepciones simplificada
+- Transaccionalidad explícita en servicios
+- Tests configurados con H2
+
+Ver [doc/corrections.md](./doc/corrections.md) para detalles completos.
 
 ## Licencia
 
