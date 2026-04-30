@@ -1,9 +1,10 @@
 package cat.itacademy.s04.t02.n02.provider.service;
 
-import cat.itacademy.s04.t02.n02.fruit.dto.FruitDto;
+import cat.itacademy.s04.t02.n02.fruit.dto.FruitResponseDto;
 import cat.itacademy.s04.t02.n02.fruit.model.Fruit;
 import cat.itacademy.s04.t02.n02.fruit.repository.FruitRepository;
-import cat.itacademy.s04.t02.n02.provider.dto.ProviderDto;
+import cat.itacademy.s04.t02.n02.provider.dto.ProviderRequestDto;
+import cat.itacademy.s04.t02.n02.provider.dto.ProviderResponseDto;
 import cat.itacademy.s04.t02.n02.provider.exception.ProviderAlreadyExistsException;
 import cat.itacademy.s04.t02.n02.provider.exception.ProviderHasFruitsException;
 import cat.itacademy.s04.t02.n02.provider.exception.ProviderNotFoundException;
@@ -37,7 +38,7 @@ class ProviderServiceTest {
     private ProviderService providerService;
 
     private Provider provider;
-    private ProviderDto providerDto;
+    private ProviderRequestDto providerRequestDto;
 
     @BeforeEach
     void setUp() {
@@ -46,7 +47,7 @@ class ProviderServiceTest {
         provider.setName("Provider1");
         provider.setCountry("Spain");
 
-        providerDto = new ProviderDto(1L, "Provider1", "Spain");
+        providerRequestDto = new ProviderRequestDto("Provider1", "Spain");
     }
 
     @Test
@@ -54,11 +55,11 @@ class ProviderServiceTest {
         when(providerRepository.existsByName("Provider1")).thenReturn(false);
         when(providerRepository.save(any(Provider.class))).thenReturn(provider);
 
-        ProviderDto result = providerService.addProvider(providerDto);
+        ProviderResponseDto result = providerService.addProvider(providerRequestDto);
 
         assertNotNull(result);
-        assertEquals("Provider1", result.getName());
-        assertEquals("Spain", result.getCountry());
+        assertEquals("Provider1", result.name());
+        assertEquals("Spain", result.country());
         verify(providerRepository, times(1)).save(any(Provider.class));
     }
 
@@ -67,7 +68,7 @@ class ProviderServiceTest {
         when(providerRepository.existsByName("Provider1")).thenReturn(true);
 
         assertThrows(ProviderAlreadyExistsException.class, 
-            () -> providerService.addProvider(providerDto));
+            () -> providerService.addProvider(providerRequestDto));
         
         verify(providerRepository, never()).save(any());
     }
@@ -77,21 +78,21 @@ class ProviderServiceTest {
         List<Provider> providers = Arrays.asList(provider);
         when(providerRepository.findAll()).thenReturn(providers);
 
-        List<ProviderDto> result = providerService.getAllProviders();
+        List<ProviderResponseDto> result = providerService.getAllProviders();
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Provider1", result.get(0).getName());
+        assertEquals("Provider1", result.get(0).name());
     }
 
     @Test
     void getProviderById_whenFound_shouldReturnDto() {
         when(providerRepository.findById(1L)).thenReturn(Optional.of(provider));
 
-        ProviderDto result = providerService.getProviderById(1L);
+        ProviderResponseDto result = providerService.getProviderById(1L);
 
         assertNotNull(result);
-        assertEquals("Provider1", result.getName());
+        assertEquals("Provider1", result.name());
     }
 
     @Test
@@ -104,10 +105,10 @@ class ProviderServiceTest {
 
     @Test
     void updateProvider_shouldUpdateAndReturnDto() {
-        when(providerRepository.existsById(1L)).thenReturn(true);
+        when(providerRepository.findById(1L)).thenReturn(Optional.of(provider));
         when(providerRepository.save(any(Provider.class))).thenReturn(provider);
 
-        ProviderDto result = providerService.updateProvider(1L, providerDto);
+        ProviderResponseDto result = providerService.updateProvider(1L, providerRequestDto);
 
         assertNotNull(result);
         verify(providerRepository, times(1)).save(any(Provider.class));
@@ -115,10 +116,25 @@ class ProviderServiceTest {
 
     @Test
     void updateProvider_whenNotFound_shouldThrowException() {
-        when(providerRepository.existsById(99L)).thenReturn(false);
+        when(providerRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(ProviderNotFoundException.class, 
-            () -> providerService.updateProvider(99L, providerDto));
+            () -> providerService.updateProvider(99L, providerRequestDto));
+    }
+
+    @Test
+    void updateProvider_withDuplicateName_shouldThrowException() {
+        Provider otherProvider = new Provider();
+        otherProvider.setId(2L);
+        otherProvider.setName("Provider2");
+        otherProvider.setCountry("France");
+
+        when(providerRepository.findById(1L)).thenReturn(Optional.of(provider));
+        when(providerRepository.existsByName("Provider1")).thenReturn(true);
+        when(providerRepository.findByName("Provider1")).thenReturn(otherProvider);
+
+        assertThrows(ProviderAlreadyExistsException.class, 
+            () -> providerService.updateProvider(1L, providerRequestDto));
     }
 
     @Test
@@ -166,11 +182,11 @@ class ProviderServiceTest {
         when(providerRepository.existsById(1L)).thenReturn(true);
         when(fruitRepository.findByProviderId(1L)).thenReturn(Arrays.asList(fruit));
 
-        List<FruitDto> result = providerService.getFruitsByProviderId(1L);
+        List<FruitResponseDto> result = providerService.getFruitsByProviderId(1L);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("Apple", result.get(0).getName());
+        assertEquals("Apple", result.get(0).name());
     }
 
     @Test

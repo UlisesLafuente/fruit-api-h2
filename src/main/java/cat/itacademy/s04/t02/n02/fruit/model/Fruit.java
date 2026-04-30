@@ -10,6 +10,10 @@ import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Entity representing a fruit in the system.
+ * Each fruit must be associated with a provider.
+ */
 @Getter
 @Setter
 @Entity
